@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReCalCook – Recipe Nutrition Recalculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f8fafc; }
+    ::selection { background: #a3e635; color: #000; }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-start p-6 text-gray-800">
+  <h1 class="text-3xl font-bold mb-6 text-lime-600">🥣 ReCalCook</h1>
+  <p class="mb-8 text-center max-w-md text-gray-600">
+    A free, minimal recipe nutrition recalculator.<br>
+    Add ingredients, adjust quantity, and get total calories instantly.
+  </p>
+
+  <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-6 space-y-4">
+    <div class="flex space-x-2">
+      <input id="ingredient" type="text" placeholder="Ingredient (e.g. oats)" 
+             class="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-500">
+      <input id="quantity" type="number" step="0.1" placeholder="Qty (e.g. 1.5)" 
+             class="w-24 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-lime-500">
+      <button onclick="addIngredient()" 
+              class="bg-lime-600 hover:bg-lime-700 text-white px-4 rounded-lg">Add</button>
+    </div>
+
+    <table class="w-full text-sm mt-4">
+      <thead>
+        <tr class="text-left border-b">
+          <th class="py-1">Ingredient</th>
+          <th class="py-1 text-center">Qty</th>
+          <th class="py-1 text-center">Calories</th>
+        </tr>
+      </thead>
+      <tbody id="ingredientTable"></tbody>
+    </table>
+
+    <div id="totals" class="mt-4 text-center text-lg font-semibold text-lime-700 hidden">
+      Total Calories: <span id="totalCalories">0</span> kcal
+    </div>
+  </div>
+
+  <footer class="mt-8 text-gray-400 text-sm">
+    Made with ❤️ by you — hosted free on Vercel
+  </footer>
+
+  <script>
+    // Hardcoded nutrition data (per 100g)
+    const foodDB = {
+      oats: { kcal: 389, gramsPerCup: 90 },
+      milk: { kcal: 42, gramsPerCup: 240 },
+      banana: { kcal: 89, gramsPerCup: 150 },
+      egg: { kcal: 155, gramsPerCup: 50 }
+    };
+
+    const ingredients = [];
+
+    function addIngredient() {
+      const nameInput = document.getElementById('ingredient');
+      const qtyInput = document.getElementById('quantity');
+      const name = nameInput.value.trim().toLowerCase();
+      const qty = parseFloat(qtyInput.value);
+
+      if (!name || !qty || qty <= 0) return alert("Enter valid ingredient and quantity.");
+
+      if (!foodDB[name]) return alert("Ingredient not found in local DB. Try: oats, milk, banana, egg.");
+
+      const grams = foodDB[name].gramsPerCup * qty;
+      const calories = (foodDB[name].kcal / 100) * grams;
+
+      ingredients.push({ name, qty, calories });
+      renderTable();
+
+      nameInput.value = '';
+      qtyInput.value = '';
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('ingredientTable');
+      tbody.innerHTML = '';
+
+      let total = 0;
+      ingredients.forEach(item => {
+        total += item.calories;
+        tbody.innerHTML += `
+          <tr class="border-b">
+            <td class="py-1 capitalize">${item.name}</td>
+            <td class="py-1 text-center">${item.qty}</td>
+            <td class="py-1 text-center">${item.calories.toFixed(0)}</td>
+          </tr>
+        `;
+      });
+
+      const totalDiv = document.getElementById('totals');
+      const totalCal = document.getElementById('totalCalories');
+      if (ingredients.length > 0) {
+        totalDiv.classList.remove('hidden');
+        totalCal.textContent = total.toFixed(0);
+      } else {
+        totalDiv.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
